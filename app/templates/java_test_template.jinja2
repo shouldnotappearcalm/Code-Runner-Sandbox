@@ -1,28 +1,82 @@
+// 导入必要的包
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+// 用户代码部分开始 - 请勿修改此标记
+{% if "import " in user_code %}
+// 提取用户代码中的导入语句
+{% for line in user_code.split('\n') %}
+{% if line.strip().startswith("import ") %}
+{{ line }}
+{% endif %}
+{% endfor %}
+
+// 用户代码（不包含导入语句）
+{% for line in user_code.split('\n') %}
+{% if not line.strip().startswith("import ") %}
+{{ line }}
+{% endif %}
+{% endfor %}
+{% else %}
 // 用户代码
 {{ user_code }}
+{% endif %}
+// 用户代码部分结束 - 请勿修改此标记
 
-// 如果用户代码中没有主类，添加一个主类
-{% if "public class" not in user_code and "class" not in user_code %}
+{% if "public class Solution" not in user_code and "class Solution" not in user_code %}
+// 如果用户代码中没有Solution类，添加一个Solution类
 public class Solution {
     // 这里假设用户代码中定义了solve方法
+    public Object solve(Map<String, Object> input) {
+        // 默认实现，应该被用户代码覆盖
+        return null;
+    }
 }
 {% endif %}
 
-// 添加测试类
+// 添加测试类（公共类，作为程序入口点）
 public class TestRunner {
     // 测试用例
-    private static final java.util.List<TestCase> TEST_CASES = java.util.Arrays.asList(
+    private static final List<TestCase> TEST_CASES = createTestCases();
+    
+    private static List<TestCase> createTestCases() {
+        List<TestCase> testCases = new ArrayList<>();
+        
         {% for test_case in test_cases %}
-        new TestCase(
-            {{ test_case.input | tojson }},
-            {{ test_case.expected_output | tojson }},
-            "{{ test_case.description or '' }}"
-        ){% if not loop.last %},{% endif %}
+        // 测试用例 {{ loop.index }}
+        {
+            String inputJson = "{{ test_case.input | tojson | replace('"', '\\"') }}";
+            String expectedOutputJson = "{{ test_case.expected_output | tojson | replace('"', '\\"') }}";
+            String description = "{{ test_case.description or '' }}";
+            
+            Object parsedInput = parseJson(inputJson);
+            Map<String, Object> input;
+            
+            // 确保输入是Map<String, Object>类型
+            if (parsedInput instanceof Map) {
+                input = (Map<String, Object>) parsedInput;
+            } else {
+                // 如果不是Map，创建一个包含原始输入的Map
+                input = new HashMap<>();
+                input.put("value", parsedInput);
+            }
+            
+            Object expectedOutput = parseJson(expectedOutputJson);
+            
+            testCases.add(new TestCase(input, expectedOutput, description));
+        }
         {% endfor %}
-    );
+        
+        return testCases;
+    }
     
     public static void main(String[] args) {
-        java.util.List<TestResult> results = new java.util.ArrayList<>();
+        List<TestResult> results = new ArrayList<>();
         
         for (int i = 0; i < TEST_CASES.size(); i++) {
             TestCase testCase = TEST_CASES.get(i);
@@ -32,9 +86,21 @@ public class TestRunner {
                 // 记录开始时间
                 long startTime = System.currentTimeMillis();
                 
+                // 创建Solution实例
+                Solution solution;
+                try {
+                    solution = new Solution();
+                } catch (Exception e) {
+                    throw new RuntimeException("无法创建Solution实例: " + e.getMessage(), e);
+                }
+                
                 // 执行用户代码
-                Solution solution = new Solution();
-                Object actualOutput = solution.solve(testCase.input);
+                Object actualOutput;
+                try {
+                    actualOutput = solution.solve(testCase.input);
+                } catch (Exception e) {
+                    throw new RuntimeException("执行solve方法时出错: " + e.getMessage(), e);
+                }
                 
                 // 记录结束时间
                 long endTime = System.currentTimeMillis();
@@ -55,11 +121,17 @@ public class TestRunner {
                 
             } catch (Exception e) {
                 // 记录异常
+                String errorMessage = e.getMessage();
+                StringBuilder stackTrace = new StringBuilder();
+                for (StackTraceElement element : e.getStackTrace()) {
+                    stackTrace.append(element.toString()).append("\n");
+                }
+                
                 results.add(new TestResult(
                     false,
                     testCase.input,
                     testCase.expectedOutput,
-                    new ErrorOutput(e.getMessage(), java.util.Arrays.toString(e.getStackTrace())),
+                    new ErrorOutput(errorMessage, stackTrace.toString()),
                     0,
                     0,
                     testCase.description
@@ -76,9 +148,9 @@ public class TestRunner {
         if (a == b) return true;
         if (a == null || b == null) return false;
         
-        if (a instanceof java.util.List && b instanceof java.util.List) {
-            java.util.List<?> listA = (java.util.List<?>) a;
-            java.util.List<?> listB = (java.util.List<?>) b;
+        if (a instanceof List && b instanceof List) {
+            List<?> listA = (List<?>) a;
+            List<?> listB = (List<?>) b;
             
             if (listA.size() != listB.size()) return false;
             
@@ -89,9 +161,9 @@ public class TestRunner {
             return true;
         }
         
-        if (a instanceof java.util.Map && b instanceof java.util.Map) {
-            java.util.Map<?, ?> mapA = (java.util.Map<?, ?>) a;
-            java.util.Map<?, ?> mapB = (java.util.Map<?, ?>) b;
+        if (a instanceof Map && b instanceof Map) {
+            Map<?, ?> mapA = (Map<?, ?>) a;
+            Map<?, ?> mapB = (Map<?, ?>) b;
             
             if (mapA.size() != mapB.size()) return false;
             
@@ -100,6 +172,17 @@ public class TestRunner {
             }
             
             return true;
+        }
+        
+        // 对于数字类型，特殊处理
+        if (a instanceof Number && b instanceof Number) {
+            // 如果都是整数类型
+            if ((a instanceof Integer || a instanceof Long) && 
+                (b instanceof Integer || b instanceof Long)) {
+                return ((Number)a).longValue() == ((Number)b).longValue();
+            }
+            // 如果有浮点数，使用双精度比较
+            return Math.abs(((Number)a).doubleValue() - ((Number)b).doubleValue()) < 1e-9;
         }
         
         // 对于基本类型和字符串，使用equals方法
@@ -124,8 +207,8 @@ public class TestRunner {
             return obj.toString();
         }
         
-        if (obj instanceof java.util.List) {
-            java.util.List<?> list = (java.util.List<?>) obj;
+        if (obj instanceof List) {
+            List<?> list = (List<?>) obj;
             StringBuilder sb = new StringBuilder("[");
             boolean first = true;
             
@@ -141,12 +224,12 @@ public class TestRunner {
             return sb.toString();
         }
         
-        if (obj instanceof java.util.Map) {
-            java.util.Map<?, ?> map = (java.util.Map<?, ?>) obj;
+        if (obj instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) obj;
             StringBuilder sb = new StringBuilder("{");
             boolean first = true;
             
-            for (java.util.Map.Entry<?, ?> entry : map.entrySet()) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
                 if (!first) {
                     sb.append(",");
                 }
@@ -177,84 +260,12 @@ public class TestRunner {
     private static Object parseJson(String json) {
         json = json.trim();
         
-        // 解析数组
-        if (json.startsWith("[") && json.endsWith("]")) {
-            java.util.List<Object> list = new java.util.ArrayList<>();
-            String content = json.substring(1, json.length() - 1).trim();
-            
-            if (!content.isEmpty()) {
-                int start = 0;
-                int brackets = 0;
-                int braces = 0;
-                boolean inString = false;
-                
-                for (int i = 0; i < content.length(); i++) {
-                    char c = content.charAt(i);
-                    
-                    if (c == '"' && (i == 0 || content.charAt(i - 1) != '\\')) {
-                        inString = !inString;
-                    } else if (!inString) {
-                        if (c == '[') brackets++;
-                        else if (c == ']') brackets--;
-                        else if (c == '{') braces++;
-                        else if (c == '}') braces--;
-                        else if (c == ',' && brackets == 0 && braces == 0) {
-                            list.add(parseJson(content.substring(start, i)));
-                            start = i + 1;
-                        }
-                    }
-                }
-                
-                list.add(parseJson(content.substring(start)));
-            }
-            
-            return list;
-        }
+        // 解析null
+        if (json.equals("null")) return null;
         
-        // 解析对象
-        if (json.startsWith("{") && json.endsWith("}")) {
-            java.util.Map<String, Object> map = new java.util.HashMap<>();
-            String content = json.substring(1, json.length() - 1).trim();
-            
-            if (!content.isEmpty()) {
-                int start = 0;
-                int brackets = 0;
-                int braces = 0;
-                boolean inString = false;
-                String key = null;
-                
-                for (int i = 0; i < content.length(); i++) {
-                    char c = content.charAt(i);
-                    
-                    if (c == '"' && (i == 0 || content.charAt(i - 1) != '\\')) {
-                        inString = !inString;
-                    } else if (!inString) {
-                        if (c == '[') brackets++;
-                        else if (c == ']') brackets--;
-                        else if (c == '{') braces++;
-                        else if (c == '}') braces--;
-                        else if (c == ':' && brackets == 0 && braces == 0 && key == null) {
-                            key = content.substring(start, i).trim();
-                            if (key.startsWith("\"") && key.endsWith("\"")) {
-                                key = key.substring(1, key.length() - 1);
-                            }
-                            start = i + 1;
-                        }
-                        else if (c == ',' && brackets == 0 && braces == 0) {
-                            map.put(key, parseJson(content.substring(start, i)));
-                            key = null;
-                            start = i + 1;
-                        }
-                    }
-                }
-                
-                if (key != null) {
-                    map.put(key, parseJson(content.substring(start)));
-                }
-            }
-            
-            return map;
-        }
+        // 解析布尔值
+        if (json.equals("true")) return Boolean.TRUE;
+        if (json.equals("false")) return Boolean.FALSE;
         
         // 解析字符串
         if (json.startsWith("\"") && json.endsWith("\"")) {
@@ -271,18 +282,121 @@ public class TestRunner {
             if (json.contains(".")) {
                 return Double.parseDouble(json);
             } else {
-                return Integer.parseInt(json);
+                try {
+                    return Integer.parseInt(json);
+                } catch (NumberFormatException e) {
+                    // 可能是长整型
+                    return Long.parseLong(json);
+                }
             }
         } catch (NumberFormatException e) {
             // 不是数字
         }
         
-        // 解析布尔值
-        if (json.equals("true")) return Boolean.TRUE;
-        if (json.equals("false")) return Boolean.FALSE;
+        // 解析数组
+        if (json.startsWith("[") && json.endsWith("]")) {
+            List<Object> list = new ArrayList<>();
+            String content = json.substring(1, json.length() - 1).trim();
+            
+            if (!content.isEmpty()) {
+                int start = 0;
+                int brackets = 0;
+                int braces = 0;
+                boolean inString = false;
+                boolean escaped = false;
+                
+                for (int i = 0; i < content.length(); i++) {
+                    char c = content.charAt(i);
+                    
+                    if (escaped) {
+                        escaped = false;
+                        continue;
+                    }
+                    
+                    if (c == '\\') {
+                        escaped = true;
+                    } else if (c == '"' && !escaped) {
+                        inString = !inString;
+                    } else if (!inString) {
+                        if (c == '[') brackets++;
+                        else if (c == ']') brackets--;
+                        else if (c == '{') braces++;
+                        else if (c == '}') braces--;
+                        else if (c == ',' && brackets == 0 && braces == 0) {
+                            String element = content.substring(start, i).trim();
+                            if (!element.isEmpty()) {
+                                list.add(parseJson(element));
+                            }
+                            start = i + 1;
+                        }
+                    }
+                }
+                
+                String lastElement = content.substring(start).trim();
+                if (!lastElement.isEmpty()) {
+                    list.add(parseJson(lastElement));
+                }
+            }
+            
+            return list;
+        }
         
-        // 解析null
-        if (json.equals("null")) return null;
+        // 解析对象
+        if (json.startsWith("{") && json.endsWith("}")) {
+            Map<String, Object> map = new HashMap<>();
+            String content = json.substring(1, json.length() - 1).trim();
+            
+            if (!content.isEmpty()) {
+                int start = 0;
+                int brackets = 0;
+                int braces = 0;
+                boolean inString = false;
+                boolean escaped = false;
+                String key = null;
+                
+                for (int i = 0; i < content.length(); i++) {
+                    char c = content.charAt(i);
+                    
+                    if (escaped) {
+                        escaped = false;
+                        continue;
+                    }
+                    
+                    if (c == '\\') {
+                        escaped = true;
+                    } else if (c == '"' && !escaped) {
+                        inString = !inString;
+                    } else if (!inString) {
+                        if (c == '[') brackets++;
+                        else if (c == ']') brackets--;
+                        else if (c == '{') braces++;
+                        else if (c == '}') braces--;
+                        else if (c == ':' && brackets == 0 && braces == 0 && key == null) {
+                            key = content.substring(start, i).trim();
+                            if (key.startsWith("\"") && key.endsWith("\"")) {
+                                key = key.substring(1, key.length() - 1)
+                                      .replace("\\\"", "\"")
+                                      .replace("\\\\", "\\");
+                            }
+                            start = i + 1;
+                        }
+                        else if (c == ',' && brackets == 0 && braces == 0 && key != null) {
+                            String value = content.substring(start, i).trim();
+                            map.put(key, parseJson(value));
+                            key = null;
+                            start = i + 1;
+                        }
+                    }
+                }
+                
+                if (key != null) {
+                    String value = content.substring(start).trim();
+                    map.put(key, parseJson(value));
+                }
+            }
+            
+            return map;
+        }
         
         // 默认返回原始字符串
         return json;
@@ -290,11 +404,11 @@ public class TestRunner {
     
     // 测试用例类
     private static class TestCase {
-        public final Object input;
+        public final Map<String, Object> input;
         public final Object expectedOutput;
         public final String description;
         
-        public TestCase(Object input, Object expectedOutput, String description) {
+        public TestCase(Map<String, Object> input, Object expectedOutput, String description) {
             this.input = input;
             this.expectedOutput = expectedOutput;
             this.description = description;
