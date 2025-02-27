@@ -1,0 +1,19 @@
+import json
+import sys
+
+# 用户代码
+{{ user_code }}
+
+# 读取输入
+input_data = json.load(sys.stdin)
+
+# 执行用户代码
+try:
+    # 假设用户代码中定义了一个名为 Solution 的类，并且有一个 solve 方法
+    solution = Solution()
+    result = solution.solve(input_data)
+    
+    # 输出结果
+    print(json.dumps(result))
+except Exception as e:
+    print(json.dumps({"error": str(e)})) 

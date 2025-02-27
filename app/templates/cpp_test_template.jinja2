@@ -1,0 +1,127 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <chrono>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+// 用户代码
+{{ user_code }}
+
+// 如果用户代码中没有Solution类，添加一个Solution类
+#ifndef SOLUTION_CLASS_DEFINED
+class Solution {
+public:
+    // 这里假设用户代码中定义了solve方法
+    json solve(const json& input) {
+        // 默认实现，实际应用中应该由用户提供
+        return input;
+    }
+};
+#endif
+
+// 测试用例结构
+struct TestCase {
+    json input;
+    json expected_output;
+    std::string description;
+    
+    TestCase(json i, json e, std::string d) : input(i), expected_output(e), description(d) {}
+};
+
+// 测试结果结构
+struct TestResult {
+    bool passed;
+    json input;
+    json expected_output;
+    json actual_output;
+    double execution_time;
+    double memory_usage;
+    std::string description;
+    
+    json to_json() const {
+        return {
+            {"passed", passed},
+            {"input", input},
+            {"expected_output", expected_output},
+            {"actual_output", actual_output},
+            {"execution_time", execution_time},
+            {"memory_usage", memory_usage},
+            {"description", description}
+        };
+    }
+};
+
+// 比较两个JSON对象是否相等
+bool equals(const json& a, const json& b) {
+    return a == b;
+}
+
+int main() {
+    // 测试用例
+    std::vector<TestCase> test_cases = {
+        {% for test_case in test_cases %}
+        TestCase(
+            {{ test_case.input | tojson }},
+            {{ test_case.expected_output | tojson }},
+            "{{ test_case.description or '' }}"
+        ){% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    
+    // 测试结果
+    std::vector<json> results;
+    
+    // 运行测试
+    for (size_t i = 0; i < test_cases.size(); i++) {
+        try {
+            // 记录开始时间
+            auto start_time = std::chrono::high_resolution_clock::now();
+            
+            // 执行用户代码
+            Solution solution;
+            json actual_output = solution.solve(test_cases[i].input);
+            
+            // 记录结束时间
+            auto end_time = std::chrono::high_resolution_clock::now();
+            double execution_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+            
+            // 检查结果
+            bool passed = equals(actual_output, test_cases[i].expected_output);
+            
+            // 记录结果
+            TestResult result = {
+                passed,
+                test_cases[i].input,
+                test_cases[i].expected_output,
+                actual_output,
+                execution_time,
+                0.0,  // 简化版不计算内存使用
+                test_cases[i].description
+            };
+            
+            results.push_back(result.to_json());
+            
+        } catch (const std::exception& exc) {
+            // 记录异常
+            json error_result = {
+                {"passed", false},
+                {"input", test_cases[i].input},
+                {"expected_output", test_cases[i].expected_output},
+                {"actual_output", {{"error", exc.what()}}},
+                {"execution_time", 0.0},
+                {"memory_usage", 0.0},
+                {"description", test_cases[i].description}
+            };
+            
+            results.push_back(error_result);
+        }
+    }
+    
+    // 输出结果
+    std::cout << json(results).dump() << std::endl;
+    
+    return 0;
+} 

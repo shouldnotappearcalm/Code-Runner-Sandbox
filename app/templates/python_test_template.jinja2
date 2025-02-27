@@ -1,0 +1,63 @@
+import json
+import sys
+import time
+import traceback
+
+# 用户代码
+{{ user_code }}
+
+# 测试用例
+test_cases = [
+{% for test_case in test_cases %}
+    {
+        "input": {{ test_case.input | tojson }},
+        "expected_output": {{ test_case.expected_output | tojson }},
+        "description": "{{ test_case.description or '' }}"
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+
+# 运行测试
+results = []
+for i, test_case in enumerate(test_cases):
+    print(f"运行测试用例 {i+1}...", file=sys.stderr)
+    
+    try:
+        # 记录开始时间
+        start_time = time.time()
+        
+        # 执行用户代码
+        solution = Solution()
+        actual_output = solution.solve(test_case["input"])
+        
+        # 记录结束时间
+        end_time = time.time()
+        execution_time = (end_time - start_time) * 1000  # 转换为毫秒
+        
+        # 检查结果
+        passed = actual_output == test_case["expected_output"]
+        
+        results.append({
+            "passed": passed,
+            "input": test_case["input"],
+            "expected_output": test_case["expected_output"],
+            "actual_output": actual_output,
+            "execution_time": execution_time,
+            "memory_usage": 0,  # 简化版不计算内存使用
+            "description": test_case["description"]
+        })
+        
+    except Exception as e:
+        # 记录异常
+        results.append({
+            "passed": False,
+            "input": test_case["input"],
+            "expected_output": test_case["expected_output"],
+            "actual_output": {"error": str(e), "traceback": traceback.format_exc()},
+            "execution_time": 0,
+            "memory_usage": 0,
+            "description": test_case["description"]
+        })
+
+# 输出结果
+print(json.dumps(results)) 

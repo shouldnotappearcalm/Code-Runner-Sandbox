@@ -1,0 +1,61 @@
+// 用户代码
+{{ user_code }}
+
+// 测试用例
+const testCases = [
+{% for test_case in test_cases %}
+    {
+        input: {{ test_case.input | tojson }},
+        expectedOutput: {{ test_case.expected_output | tojson }},
+        description: "{{ test_case.description or '' }}"
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+];
+
+// 运行测试
+const results = [];
+for (let i = 0; i < testCases.length; i++) {
+    const testCase = testCases[i];
+    console.error(`运行测试用例 ${i+1}...`);
+    
+    try {
+        // 记录开始时间
+        const startTime = Date.now();
+        
+        // 执行用户代码
+        const solution = new Solution();
+        const actualOutput = solution.solve(testCase.input);
+        
+        // 记录结束时间
+        const endTime = Date.now();
+        const executionTime = endTime - startTime;
+        
+        // 检查结果
+        const passed = JSON.stringify(actualOutput) === JSON.stringify(testCase.expectedOutput);
+        
+        results.push({
+            passed,
+            input: testCase.input,
+            expected_output: testCase.expectedOutput,
+            actual_output: actualOutput,
+            execution_time: executionTime,
+            memory_usage: 0,  // 简化版不计算内存使用
+            description: testCase.description
+        });
+        
+    } catch (e) {
+        // 记录异常
+        results.push({
+            passed: false,
+            input: testCase.input,
+            expected_output: testCase.expectedOutput,
+            actual_output: { error: e.message, stack: e.stack },
+            execution_time: 0,
+            memory_usage: 0,
+            description: testCase.description
+        });
+    }
+}
+
+// 输出结果
+console.log(JSON.stringify(results)); 
