@@ -71,17 +71,32 @@ docker logs -f code-sandbox
 curl -X POST "http://localhost:8000/code/execute" \
   -H "Content-Type: application/json" \
   -d '{
-    "code": "def solve(nums):\n    return sum(nums)",
-    "language": "python",
-    "problem_id": "sum-of-array",
-    "test_cases": [
-      {
-        "input": [1, 2, 3, 4, 5],
-        "expected_output": 15,
-        "description": "测试用例1"
-      }
-    ]
-  }'
+  "code" : "\nclass Solution:\n    def solve(self, problem):\n        nums = problem[\"nums\"]\n        target = problem[\"target\"]\n        \n        # 使用哈希表解决两数之和问题\n        num_map = {}\n        for i, num in enumerate(nums):\n            complement = target - num\n            if complement in num_map:\n                return [num_map[complement], i]\n            num_map[num] = i\n        \n        return []  # 没有找到解\n",
+  "language" : "python",
+  "problem_id" : "two-sum",
+  "test_cases" : [ {
+    "input" : {
+      "nums" : [ 2, 7, 11, 15 ],
+      "target" : 9
+    },
+    "expected_output" : [ 0, 1 ],
+    "description" : "示例 1: 目标和为 9"
+  }, {
+    "input" : {
+      "nums" : [ 3, 2, 4 ],
+      "target" : 6
+    },
+    "expected_output" : [ 1, 2 ],
+    "description" : "示例 2: 目标和为 6"
+  }, {
+    "input" : {
+      "nums" : [ 3, 3 ],
+      "target" : 6
+    },
+    "expected_output" : [ 0, 1 ],
+    "description" : "示例 3: 相同元素"
+  } ]
+}'
 ```
 
 ## 支持的编程语言
