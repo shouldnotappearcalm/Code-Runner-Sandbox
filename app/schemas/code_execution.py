@@ -8,6 +8,7 @@ class ProgrammingLanguage(str, Enum):
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     JAVA = "java"
+    KOTLIN = "kotlin"
     CPP = "cpp"
     GO = "go"
     RUST = "rust"

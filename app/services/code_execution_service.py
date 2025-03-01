@@ -23,6 +23,8 @@ from app.utils.code_generator import CodeGenerator
 
 from app.executors.python_executor import PythonExecutor
 from app.executors.java_executor import JavaExecutor
+from app.executors.kotlin_executor import KotlinExecutor
+from app.executors.javascript_executor import JavaScriptExecutor
 
 # 执行超时时间（秒）
 EXECUTION_TIMEOUT = 10
@@ -43,6 +45,8 @@ class CodeExecutionService:
     _executors = {
         ProgrammingLanguage.PYTHON: PythonExecutor(),
         ProgrammingLanguage.JAVA: JavaExecutor(),
+        ProgrammingLanguage.KOTLIN: KotlinExecutor(),
+        ProgrammingLanguage.JAVASCRIPT: JavaScriptExecutor(),
     }
     
     @classmethod

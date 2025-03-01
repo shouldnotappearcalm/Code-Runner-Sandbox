@@ -6,7 +6,7 @@ import json
 from typing import Any, Tuple
 
 # 执行超时时间（秒）
-EXECUTION_TIMEOUT = 10
+EXECUTION_TIMEOUT = 1000
 # 内存限制（MB）
 MEMORY_LIMIT = 512
 
