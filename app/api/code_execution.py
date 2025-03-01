@@ -132,4 +132,48 @@ async def run_single_test(
         raise HTTPException(
             status_code=500,
             detail=f"执行代码时发生错误: {str(exc)}"
+        )
+
+
+@router.post(
+    "/run",
+    response_model=Dict[str, Any],
+    summary="直接执行代码",
+    description="接收用户代码并直接执行，返回执行结果",
+    response_description="代码执行结果，包含输出、执行时间和内存使用"
+)
+async def run_code(
+    code: str = Body(..., description="用户提交的代码", example="print('Hello, World!')"),
+    language: ProgrammingLanguage = Body(..., description="编程语言")
+):
+    """
+    直接执行代码
+    
+    - **code**: 用户提交的代码
+    - **language**: 编程语言（python, javascript, java, cpp, go, rust）
+    
+    返回:
+    - **output**: 执行结果
+    - **execution_time**: 执行时间(毫秒)
+    - **memory_usage**: 内存使用(KB)
+    """
+    try:
+        # 直接执行代码
+        output, execution_time, memory_usage = await CodeExecutionService.direct_execute_code(
+            code=code,
+            language=language
+        )
+        
+        # 返回结果
+        return {
+            "output": output,
+            "execution_time": execution_time,
+            "memory_usage": memory_usage
+        }
+        
+    except Exception as exc:
+        # 处理执行过程中的异常
+        raise HTTPException(
+            status_code=500,
+            detail=f"执行代码时发生错误: {str(exc)}"
         ) 

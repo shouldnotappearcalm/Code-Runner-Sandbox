@@ -22,11 +22,6 @@ from app.schemas.code_execution import (
 from app.utils.code_generator import CodeGenerator
 
 from app.executors.python_executor import PythonExecutor
-from app.executors.javascript_executor import JavaScriptExecutor
-from app.executors.java_executor import JavaExecutor
-from app.executors.cpp_executor import CppExecutor
-from app.executors.go_executor import GoExecutor
-from app.executors.rust_executor import RustExecutor
 
 # 执行超时时间（秒）
 EXECUTION_TIMEOUT = 10
@@ -38,12 +33,6 @@ class CodeExecutionService:
     代码执行服务
     
     提供代码执行和测试功能的服务类，支持多种编程语言：
-    - Python
-    - JavaScript
-    - Java
-    - C++
-    - Go
-    - Rust
     
     每种语言都有对应的执行器实现，负责代码的编译和运行。
     所有执行都在安全的环境中进行，有执行时间和内存使用限制。
@@ -52,11 +41,6 @@ class CodeExecutionService:
     # 注册语言执行器
     _executors = {
         ProgrammingLanguage.PYTHON: PythonExecutor(),
-        ProgrammingLanguage.JAVASCRIPT: JavaScriptExecutor(),
-        ProgrammingLanguage.JAVA: JavaExecutor(),
-        ProgrammingLanguage.CPP: CppExecutor(),
-        ProgrammingLanguage.GO: GoExecutor(),
-        ProgrammingLanguage.RUST: RustExecutor()
     }
     
     @classmethod
@@ -86,33 +70,11 @@ class CodeExecutionService:
                 results=[]
             )
         
-        # 对于Java语言，打印用户代码长度和内容以便调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"Java用户代码长度: {len(code)}")
-            print(f"Java用户代码内容: {code[:100]}...")
-            
-            # 确保用户代码中有Solution类
-            if "class Solution" not in code:
-                code = f"""
-                public class Solution {{
-                    public Object solve(java.util.Map<String, Object> input) {{
-                        // 默认实现
-                        return null;
-                    }}
-                    
-                    {code}
-                }}
-                """
-        
+
         # 生成测试代码
         code_generator = CodeGenerator()
         test_code = code_generator.generate_test_code(code, language, test_cases)
-        
-        # 对于Java语言，打印生成的测试代码长度以便调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"生成的Java测试代码长度: {len(test_code)}")
-            print(f"生成的Java测试代码前100字符: {test_code[:100]}...")
-        
+
         # 执行测试代码
         try:
             results = []
@@ -195,47 +157,8 @@ class CodeExecutionService:
         if not executor:
             raise ValueError(f"不支持的编程语言: {language}")
         
-        # 对于Java语言，打印用户代码长度和内容以便调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"Java用户代码长度: {len(code)}")
-            print(f"Java用户代码内容: {code[:100]}...")
-            
-            # 确保用户代码中有Solution类
-            if "class Solution" not in code:
-                code = f"""
-                public class Solution {{
-                    public Object solve(java.util.Map<String, Object> input) {{
-                        // 默认实现
-                        return null;
-                    }}
-                    
-                    {code}
-                }}
-                """
-            # 检查用户代码是否已经包含Solution类
-            elif "class Solution" not in code and "public class Solution" not in code:
-                # 检查用户代码是否已经包含其他类定义
-                if "class " not in code and "public class " not in code:
-                    # 如果用户代码不包含任何类定义，将其包装在Solution类中
-                    code = f"""
-                    public class Solution {{
-                        {code}
-                        
-                        public Object solve(java.util.Map<String, Object> input) {{
-                            // 默认实现，应该被用户代码覆盖
-                            return null;
-                        }}
-                    }}
-                    """
-                # 否则，用户代码已经包含其他类定义，不进行包装
-        
         test_code = CodeGenerator().generate_test_code(code, language, test_cases)
-        
-        # 对于Java语言，打印生成的测试代码长度以便调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"生成的Java测试代码长度: {len(test_code)}")
-            print(f"生成的Java测试代码前100字符: {test_code[:100]}...")
-        
+
         # 执行测试
         try:
             results = []
@@ -292,4 +215,23 @@ class CodeExecutionService:
                 message=str(exc),
                 total_tests=len(test_cases),
                 passed_tests=0
-            ) 
+            )
+
+    @classmethod
+    async def direct_execute_code(cls, code: str, language: ProgrammingLanguage) -> Tuple[Any, float, float]:
+        """
+        直接执行代码，不需要任何输入数据或模板渲染
+        
+        Args:
+            code: 用户代码
+            language: 编程语言
+            
+        Returns:
+            Tuple[Any, float, float]: (执行结果, 执行时间(ms), 内存使用(KB))
+        """
+        executor = cls._executors.get(language)
+        if not executor:
+            raise ValueError(f"不支持的编程语言: {language}")
+        
+        # 直接执行代码，不需要任何输入数据
+        return await executor.execute(code, {})

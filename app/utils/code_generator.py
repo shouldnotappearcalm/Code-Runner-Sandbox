@@ -7,7 +7,7 @@ try:
     from app.schemas.code_execution import ProgrammingLanguage, TestCase
 except ImportError:
     # 当在app目录下运行时，使用相对导入
-    from schemas.code_execution import ProgrammingLanguage, TestCase
+    from ..schemas.code_execution import ProgrammingLanguage, TestCase
 
 
 class CodeGenerator:
@@ -50,11 +50,7 @@ class CodeGenerator:
             template = self.env.get_template(template_name)
         except Exception as exc:
             raise ValueError(f"不支持的编程语言模板: {language.value}, 错误: {str(exc)}")
-        
-        # 打印用户代码用于调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"用户代码 (长度: {len(user_code)}):\n{user_code}")
-            
+
         # 渲染模板
         test_code = template.render(
             user_code=user_code,
@@ -62,19 +58,7 @@ class CodeGenerator:
         )
         
         # 打印生成的测试代码用于调试
-        if language == ProgrammingLanguage.JAVA:
-            print(f"生成的Java测试代码 (长度: {len(test_code)}):\n{test_code}")
-            
-            # 检查用户代码是否在生成的测试代码中
-            if user_code.strip() in test_code:
-                print("用户代码已成功包含在生成的测试代码中")
-            else:
-                print("警告: 用户代码可能没有正确包含在生成的测试代码中")
-                
-                # 检查用户代码的一部分是否在生成的测试代码中
-                if "public class Solution" in user_code and "public class Solution" in test_code:
-                    print("但找到了Solution类定义")
-        
+
         return test_code
     
     def wrap_user_code(self, user_code: str, language: ProgrammingLanguage, test_input: Any) -> str:
