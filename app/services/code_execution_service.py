@@ -22,6 +22,7 @@ from app.schemas.code_execution import (
 from app.utils.code_generator import CodeGenerator
 
 from app.executors.python_executor import PythonExecutor
+from app.executors.java_executor import JavaExecutor
 
 # 执行超时时间（秒）
 EXECUTION_TIMEOUT = 10
@@ -41,6 +42,7 @@ class CodeExecutionService:
     # 注册语言执行器
     _executors = {
         ProgrammingLanguage.PYTHON: PythonExecutor(),
+        ProgrammingLanguage.JAVA: JavaExecutor(),
     }
     
     @classmethod
