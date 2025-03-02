@@ -23,6 +23,42 @@
 - Objective-C
 - Swift
 
+## SDK 使用
+
+目前提供 Python SDK，其他语言（Java、Go、JavaScript 等）的 SDK 正在开发中。
+
+### Python SDK 使用示例
+
+```python
+from code_runner_sdk.core.client import CodeRunnerClient, ProgrammingLanguage
+
+# 初始化客户端
+client = CodeRunnerClient(
+    host="localhost",
+    port=8000
+)
+
+# 运行简单的 Python 代码
+result = client.run_code(
+    code='print("Hello, Code Runner!")',
+    language=ProgrammingLanguage.PYTHON
+)
+print(f"输出内容: {result['output']}")
+print(f"执行时间: {result['execution_time']}ms")
+print(f"内存使用: {result['memory_usage']}KB")
+
+# 支持多种编程语言
+code_samples = {
+    ProgrammingLanguage.PYTHON: 'print("Hello from Python!")',
+    ProgrammingLanguage.JAVASCRIPT: 'console.log("Hello from JavaScript!");',
+    ProgrammingLanguage.GO: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n}',
+}
+
+for language, code in code_samples.items():
+    result = client.run_code(code=code, language=language)
+    print(f"{language} 输出: {result['output']}")
+```
+
 ## API 使用示例
 
 ### 直接执行代码
