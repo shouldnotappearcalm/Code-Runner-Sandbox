@@ -12,6 +12,9 @@ class ProgrammingLanguage(str, Enum):
     CPP = "cpp"
     GO = "go"
     RUST = "rust"
+    BASH = "bash"
+    OBJC = "objc"
+    SWIFT = "swift"
 
 
 class CodeExecutionRequest(BaseModel):

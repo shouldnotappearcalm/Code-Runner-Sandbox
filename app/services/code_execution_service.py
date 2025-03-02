@@ -25,6 +25,12 @@ from app.executors.python_executor import PythonExecutor
 from app.executors.java_executor import JavaExecutor
 from app.executors.kotlin_executor import KotlinExecutor
 from app.executors.javascript_executor import JavaScriptExecutor
+from app.executors.bash_executor import BashExecutor
+from app.executors.cpp_executor import CppExecutor
+from app.executors.rust_executor import RustExecutor
+from app.executors.go_executor import GoExecutor
+from app.executors.objc_executor import ObjectiveCExecutor
+from app.executors.swift_executor import SwiftExecutor
 
 # 执行超时时间（秒）
 EXECUTION_TIMEOUT = 10
@@ -47,6 +53,12 @@ class CodeExecutionService:
         ProgrammingLanguage.JAVA: JavaExecutor(),
         ProgrammingLanguage.KOTLIN: KotlinExecutor(),
         ProgrammingLanguage.JAVASCRIPT: JavaScriptExecutor(),
+        ProgrammingLanguage.BASH: BashExecutor(),
+        ProgrammingLanguage.CPP: CppExecutor(),
+        ProgrammingLanguage.RUST: RustExecutor(),
+        ProgrammingLanguage.GO: GoExecutor(),
+        ProgrammingLanguage.OBJC: ObjectiveCExecutor(),
+        ProgrammingLanguage.SWIFT: SwiftExecutor(),
     }
     
     @classmethod
