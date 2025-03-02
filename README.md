@@ -27,12 +27,18 @@
 
 目前提供 Python SDK，其他语言（Java、Go、JavaScript 等）的 SDK 正在开发中。
 
-### Python SDK 使用示例
+### Python SDK 安装
+
+```bash
+pip install code-runner-sdk
+```
+
+### 快速开始示例
 
 ```python
-from code_runner_sdk.core.client import CodeRunnerClient, ProgrammingLanguage
+from code_runner_sdk import CodeRunnerClient, ProgrammingLanguage
 
-# 初始化客户端
+# 创建客户端实例
 client = CodeRunnerClient(
     host="localhost",
     port=8000
@@ -46,18 +52,16 @@ result = client.run_code(
 print(f"输出内容: {result['output']}")
 print(f"执行时间: {result['execution_time']}ms")
 print(f"内存使用: {result['memory_usage']}KB")
-
-# 支持多种编程语言
-code_samples = {
-    ProgrammingLanguage.PYTHON: 'print("Hello from Python!")',
-    ProgrammingLanguage.JAVASCRIPT: 'console.log("Hello from JavaScript!");',
-    ProgrammingLanguage.GO: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n}',
-}
-
-for language, code in code_samples.items():
-    result = client.run_code(code=code, language=language)
-    print(f"{language} 输出: {result['output']}")
 ```
+
+更多详细的 SDK 使用说明，包括：
+- 完整的 API 接口文档
+- 测试用例执行
+- 异常处理
+- 高级配置选项
+- 多语言代码示例
+
+请参考 [SDK 详细文档](sdk/code_runner_sdk/README.md)
 
 ## API 使用示例
 
