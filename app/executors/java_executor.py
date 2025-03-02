@@ -71,12 +71,7 @@ public class Main {{
             try:
                 # 在非macOS系统上设置资源限制
                 kwargs = {}
-                if platform.system() != "Darwin":
-                    def limit_resources():
-                        import resource
-                        resource.setrlimit(resource.RLIMIT_AS, (MEMORY_LIMIT * 1024 * 1024, MEMORY_LIMIT * 1024 * 1024))
-                    kwargs["preexec_fn"] = limit_resources
-                
+
                 process = subprocess.run(
                     self.get_execute_command(filepath),
                     shell=True,
