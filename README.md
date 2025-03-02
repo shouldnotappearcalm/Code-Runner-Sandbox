@@ -77,7 +77,7 @@ def code_reward(completions, **kwargs) -> list[float]:
     Assumes the dataset contains a `verification_info` column with test cases.
     """
     from code_runner_sdk import CodeRunnerClient, ProgrammingLanguage
-    # 创建客户端实例，可以自己修改 ip
+    # start app/main.py or build start dockerfile,use your custom ip
     client = CodeRunnerClient(
         host="localhost",
         port=8000
