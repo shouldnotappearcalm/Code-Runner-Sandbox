@@ -7,14 +7,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="code-runner-sdk",
+    name="code-runner-sandbox-sdk",
     version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="Code Runner服务的Python SDK",
+    author="calm",
+    author_email="losergzr@gmail.com",
+    description="Code Runner Sandbox服务的Python SDK",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/code-runner-sdk",
+    url="https://github.com/shouldnotappearcalm/Code-Runner-Sandbox",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
