@@ -99,6 +99,66 @@ curl -X POST "http://localhost:8000/code/execute" \
 }'
 ```
 
+### 对于 Code Reward 奖励函数
+
+Open-R1 中 code_reward 函数基于 e2b SandBox，本项目可以实现相同的功能，对于计算奖励的代码段
+
+```python
+import subprocess
+import json
+
+def evaluate_code(code, test_cases):
+    passed = 0
+    total = len(test_cases)
+    exec_timeout = 5
+
+    for case in test_cases:
+        process = subprocess.run(
+            ["python3", "-c", code],
+            input=case["input"],
+            text=True,
+            capture_output=True,
+            timeout=exec_timeout
+        )
+
+        if process.returncode != 0:  # Error in execution
+            continue
+
+        output = process.stdout.strip()
+        if output.strip() == case["output"].strip():
+            passed += 1
+
+    success_rate = (passed / total)
+    print(success_rate)
+    return success_rate
+
+code_snippet = "t=int(input())\nwhile(t):\n    n=int(input())\n    l=[]\n    for i in range(n):\n        l.append(list(map(int,input().split())))\n    m=[]\n    for i in l:\n        m.append((i[1]//(i[0]+1))*i[2])\n    res=max(m)\n    print(res)\n    t=t-1"
+test_cases = json.loads('[{"fn_name": null, "input": "2\\n3\\n4 6 8\\n2 6 6\\n1 4 3\\n1\\n7 7 4\\n", "output": "12\\n0\\n", "type": "stdin_stdout"}]')
+
+evaluate_code(code_snippet, test_cases)
+```
+
+执行代码
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/code/run' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "code": "import subprocess\nimport json\n\ndef evaluate_code(code, test_cases):\n    passed = 0\n    total = len(test_cases)\n    exec_timeout = 5\n\n    for case in test_cases:\n        process = subprocess.run(\n            [\"python3\", \"-c\", code],\n            input=case[\"input\"],\n            text=True,\n            capture_output=True,\n            timeout=exec_timeout\n        )\n\n        if process.returncode != 0:  # Error in execution\n            continue\n\n        output = process.stdout.strip()\n        if output.strip() == case[\"output\"].strip():\n            passed += 1\n\n    success_rate = (passed / total)\n    print(success_rate)\n    return success_rate\n\ncode_snippet = \"t=int(input())\\nwhile(t):\\n    n=int(input())\\n    l=[]\\n    for i in range(n):\\n        l.append(list(map(int,input().split())))\\n    m=[]\\n    for i in l:\\n        m.append((i[1]//(i[0]+1))*i[2])\\n    res=max(m)\\n    print(res)\\n    t=t-1\"\ntest_cases = json.loads('\''[{\"fn_name\": null, \"input\": \"2\\\\n3\\\\n4 6 8\\\\n2 6 6\\\\n1 4 3\\\\n1\\\\n7 7 4\\\\n\", \"output\": \"12\\\\n0\\\\n\", \"type\": \"stdin_stdout\"}]'\'')\n\nevaluate_code(code_snippet, test_cases)\n",
+    "language": "python"
+}'
+```
+
+输出如下：
+```
+{
+  "output": "1.0",
+  "execution_time": 7213.936805725098,
+  "memory_usage": 0
+}
+```
+
 ## 支持的编程语言
 
 - Python
