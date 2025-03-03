@@ -35,6 +35,17 @@ Currently provides Python SDK, with other language SDKs (Java, Go, JavaScript, e
 pip install code-runner-sdk
 ```
 
+### Start the web application first
+First you should start the web application
+```bash
+uvicorn app.main:app --reload
+```
+
+or use docker
+```bash
+sh ./build_and_run.sh
+```
+
 ### Quick Start Example
 
 ```python
@@ -66,11 +77,6 @@ For more detailed SDK documentation, including:
 Please refer to the [SDK Documentation](sdk/code_runner_sdk/README.md)
 
 ### Using Code Reward Function in Open-R1
-
-First you should start the web application
-```bash
-uvicorn app.main:app --reload
-```
 
 The code_reward function in Open-R1 is based on the e2b SandBox. This project can achieve the same functionality. For the reward calculation code segment:
 
