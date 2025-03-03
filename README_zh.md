@@ -29,6 +29,18 @@
 
 目前提供 Python SDK，其他语言（Java、Go、JavaScript 等）的 SDK 正在开发中。
 
+### 首先启动 web 应用
+使用下面的命令
+```bash
+uvicorn app.main:app --reload
+```
+
+或者使用 docker 来启动
+```bash
+sh ./build_and_run.sh
+```
+
+
 ### Python SDK 安装
 
 ```bash
