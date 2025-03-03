@@ -67,6 +67,11 @@ Please refer to the [SDK Documentation](sdk/code_runner_sdk/README.md)
 
 ### Using Code Reward Function in Open-R1
 
+First you should start the web application
+```bash
+uvicorn app.main:app --reload
+```
+
 The code_reward function in Open-R1 is based on the e2b SandBox. This project can achieve the same functionality. For the reward calculation code segment:
 
 Modify the `code_reward` method in `rewards.py` as follows:
