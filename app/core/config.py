@@ -1,5 +1,6 @@
 import os
-from pydantic import BaseSettings
+from typing import ClassVar, Dict, Any
+from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
 # 加载 .env 文件
@@ -41,7 +42,7 @@ class Settings(BaseSettings):
     
     # Swagger UI 设置
     SWAGGER_UI_OAUTH2_REDIRECT_URL: str = "/api/oauth2-redirect"
-    SWAGGER_UI_PARAMETERS = {
+    SWAGGER_UI_PARAMETERS: ClassVar[Dict[str, Any]] = {
         "defaultModelsExpandDepth": 1,
         "deepLinking": True,
         "displayRequestDuration": True,
